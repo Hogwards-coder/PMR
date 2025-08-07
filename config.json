@@ -1,0 +1,37 @@
+{
+  "gameTitle": "Flow: Progressive Muscle Relaxation",
+  "backgroundImage": "./assets/images/background1.png",
+  "historyBackgroundImage": "./assets/images/background4.jpg",
+  "audio": {
+    "session": "./assets/audio/relax-in-the-forest.mp3",
+    "history": "./assets/audio/calm-soft.mp3"
+  },
+  "instructions": [
+    { "title": "Feet", "text": "Curl your toes downward… hold… and relax." },
+    { "title": "Calves", "text": "Point your toes upward… hold… and relax." },
+    { "title": "Thighs", "text": "Squeeze your thigh muscles… hold… and relax." },
+    { "title": "Stomach", "text": "Tighten your stomach… hold… and let go." },
+    { "title": "Lower back & hips", "text": "Arch slightly… hold… and relax." },
+    { "title": "Chest", "text": "Take a deep breath, tense… hold… and exhale." },
+    { "title": "Hands", "text": "Clench your fists… hold… and release." },
+    { "title": "Forearms", "text": "Tighten your forearms… hold… and relax." },
+    { "title": "Upper arms", "text": "Flex your arms… hold… and relax." },
+    { "title": "Shoulders", "text": "Shrug up to ears… hold… and drop." },
+    { "title": "Neck", "text": "Gently press head back… hold… and relax." }
+  ],
+  "quotes": [
+    "Peace starts from within.",
+    "Breathe and be present.",
+    "Release what you can’t control.",
+    "Calm flows through you.",
+    "Small steps bring big peace."
+  ],
+  "schedule": {
+    "day": "Wednesday",
+    "startDate": "2025-08-10"
+  },
+  "scoring": {
+    "pointsPerSession": 10,
+    "streakBonus": 0
+  }
+}

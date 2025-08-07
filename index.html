@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flow: PMR Game</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-image: url('background1.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 16px;
+      margin-top: 60px;
+    }
+    .hidden { display: none; }
+    .card {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #f6c7b6;
+      color: #333;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    textarea {
+      width: 80%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #f6c7b6;
+      resize: none;
+    }
+    .quote {
+      font-style: italic;
+      margin: 10px 0;
+      color: #ffe;
+    }
+    .timer {
+      font-size: 24px;
+      margin: 10px;
+      color: #ffd;
+    }
+    #streakDisplay {
+      font-size: 18px;
+      margin-top: 10px;
+      color: #aaffaa;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Flow: Progressive Muscle Relaxation</h1>
+  <div id="startSection" class="card">
+    <p>Relax from your feet to your neck. <strong>Only playable on Thursdays.</strong><br>Current Score: <span id="score">0</span></p>
+    <div id="streakDisplay">Streak: 0 weeks</div>
+    <button onclick="startSession()">Start Session</button>
+    <button onclick="showHistory()">View History & Score</button>
+    <p id="message" style="color:#ffdfdf;"></p>
+  </div>
+
+  <div id="stepSection" class="hidden card">
+    <div class="quote" id="quote"></div>
+    <h2 id="stepTitle"></h2>
+    <p id="instruction"></p>
+    <div class="timer" id="countdown">5</div>
+    <button id="nextBtn" onclick="nextStep()" disabled>Next</button>
+  </div>
+
+  <div id="reflectionSection" class="hidden card">
+    <h2>Session Reflection</h2>
+    <textarea id="reflection" rows="4" placeholder="How do you feel now?"></textarea><br>
+    <button onclick="finishSession()">Save & Finish</button>
+  </div>
+
+  <div id="historySection" class="hidden card">
+    <h3>Your History</h3>
+    <div id="historyContent"></div>
+    <p>Total sessions played: <span id="totalSessions"></span></p>
+    <p>Total score: <span id="totalScore"></span></p>
+    <p>Current streak: <span id="historyStreak"></span> weeks</p>
+    <button onclick="closeHistory()">Close</button>
+  </div>
+</div>
+
+<audio src="relax-in-the-forest.mp3" loop></audio>
+<audio src="calm-soft.mp3"></audio>
+
+<script>
+const steps = [
+  { title:'Feet', text:'Curl your toes downward… hold… and relax.' },
+  { title:'Calves', text:'Point your toes upward… hold… and relax.' },
+  { title:'Thighs', text:'Squeeze your thigh muscles… hold… and relax.' },
+  { title:'Stomach', text:'Tighten your stomach… hold… and let go.' },
+  { title:'Lower back & hips', text:'Arch slightly… hold… and relax.' },
+  { title:'Chest', text:'Take a deep breath, tense… hold… and exhale.' },
+  { title:'Hands', text:'Clench your fists… hold… and release.' },
+  { title:'Forearms', text:'Tighten your forearms… hold… and relax.' },
+  { title:'Upper arms', text:'Flex your arms… hold… and relax.' },
+  { title:'Shoulders', text:'Shrug up to ears… hold… and drop.' },
+  { title:'Neck', text:'Gently press head back… hold… and relax.' }
+];
+
+const quotes = [
+  "Peace starts from within.",
+  "Breathe and be present.",
+  "Release what you can’t control.",
+  "Calm flows through you.",
+  "Small steps bring big peace."
+];
+
+let stepIndex = 0;
+let score = parseInt(localStorage.getItem('pmrScore') || '0');
+let totalSessions = parseInt(localStorage.getItem('pmrSessions') || '0');
+let lastPlayed = localStorage.getItem('pmrLastPlayed') || null;
+let streak = parseInt(localStorage.getItem('pmrStreak') || '0');
+
+document.getElementById('score').innerText = score;
+document.getElementById('streakDisplay').innerText = `Streak: ${streak} weeks`;
+
+function startSession() {
+  const now = new Date();
+  const day = now.getDay(); // 4 = Thursday
+  const todayStr = now.toLocaleDateString();
+
+  if (day !== 4) {
+    document.getElementById('message').innerText = 'The session is only available on Thursdays. Come back then!';
+    return;
+  }
+
+  if (lastPlayed === todayStr) {
+    document.getElementById('message').innerText = 'You already played today! See you next Thursday.';
+    return;
+  }
+
+  const lastDateObj = lastPlayed ? new Date(lastPlayed) : null;
+  if (lastDateObj) {
+    const daysBetween = Math.floor((now - lastDateObj) / (1000 * 60 * 60 * 24));
+    const weeksBetween = Math.floor(daysBetween / 7);
+
+    if (weeksBetween === 1) {
+      streak++;
+      score += 10;
+    } else {
+      streak = 1;
+      score = 10;
+    }
+  } else {
+    streak = 1;
+    score = 10;
+  }
+
+  lastPlayed = todayStr;
+  localStorage.setItem('pmrStreak', streak);
+  localStorage.setItem('pmrScore', score);
+  localStorage.setItem('pmrLastPlayed', todayStr);
+  document.getElementById('streakDisplay').innerText = `Streak: ${streak} weeks`;
+  document.getElementById('score').innerText = score;
+
+  stepIndex = 0;
+  document.getElementById('startSection').classList.add('hidden');
+  document.getElementById('stepSection').classList.remove('hidden');
+  document.getElementById('waveAudio').play();
+  showStep();
+}
+
+function showStep() {
+  const current = steps[stepIndex];
+  document.getElementById('quote').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+  document.getElementById('stepTitle').innerText = current.title;
+  document.getElementById('instruction').innerText = current.text;
+  startCountdown();
+}
+
+function startCountdown() {
+  let count = 5;
+  document.getElementById('countdown').innerText = count;
+  document.getElementById('nextBtn').disabled = true;
+  const timer = setInterval(() => {
+    count--;
+    document.getElementById('countdown').innerText = count;
+    if (count === 0) {
+      clearInterval(timer);
+      document.getElementById('nextBtn').disabled = false;
+    }
+  }, 1000);
+}
+
+function nextStep() {
+  stepIndex++;
+  if (stepIndex < steps.length) {
+    showStep();
+  } else {
+    document.getElementById('stepSection').classList.add('hidden');
+    document.getElementById('reflectionSection').classList.remove('hidden');
+  }
+}
+
+function finishSession() {
+  const reflection = document.getElementById('reflection').value;
+  totalSessions++;
+  const today = new Date().toLocaleDateString();
+
+  const entry = {
+    date: today,
+    reflection: reflection,
+    score: score,
+    streak: streak
+  };
+
+  const history = JSON.parse(localStorage.getItem('pmrHistory') || '[]');
+  history.push(entry);
+  localStorage.setItem('pmrHistory', JSON.stringify(history));
+  localStorage.setItem('pmrSessions', totalSessions.toString());
+
+  document.getElementById('reflectionSection').classList.add('hidden');
+  document.getElementById('startSection').classList.remove('hidden');
+  document.getElementById('waveAudio').pause();
+  document.getElementById('waveAudio').currentTime = 0;
+}
+
+function showHistory() {
+  const history = JSON.parse(localStorage.getItem('pmrHistory') || '[]');
+  let html = '';
+  history.forEach(entry => {
+    html += `<p><strong>${entry.date}</strong>: ${entry.reflection || 'No reflection.'} (Score: ${entry.score}, Streak: ${entry.streak})</p>`;
+  });
+  document.getElementById('historyContent').innerHTML = html;
+  document.getElementById('totalSessions').innerText = totalSessions;
+  document.getElementById('totalScore').innerText = score;
+  document.getElementById('historyStreak').innerText = streak;
+  document.getElementById('historySection').classList.remove('hidden');
+}
+
+function closeHistory() {
+  document.getElementById('historySection').classList.add('hidden');
+}
+</script>
+</body>
+</html>
